@@ -3,239 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lucky Number - Phân Quyền Admin & User</title>
+    <title>Lucky Guess Game</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --primary-color: #6c5ce7;
-            --admin-color: #e74c3c;
-            --glass: rgba(255, 255, 255, 0.1);
-            --text: #ffffff;
-        }
-
         body {
-            background: radial-gradient(circle at top, #1e272e, #0f0c29);
-            color: var(--text);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            min-height: 100vh;
-            margin: 0;
+            background: #0f0c29;
+            color: white;
+            font-family: 'Segoe UI', sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
+            min-height: 100vh;
+            margin: 0;
         }
-
-        /* 1. GIAO DIỆN ĐĂNG NHẬP */
-        #login-page {
-            text-align: center;
-            background: var(--glass);
-            padding: 40px;
-            border-radius: 20px;
+        .card {
+            background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.1);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-
-        /* 2. GIAO DIỆN CHUNG (ẨN KHI CHƯA ĐĂNG NHẬP) */
-        .container {
-            display: none;
-            width: 90%;
-            max-width: 800px;
-            background: var(--glass);
             padding: 30px;
             border-radius: 20px;
-            backdrop-filter: blur(10px);
-            position: relative;
+            text-align: center;
+            width: 350px;
+            border: 1px solid rgba(255,255,255,0.1);
         }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            padding-bottom: 15px;
-            margin-bottom: 20px;
-        }
-
-        /* INPUT & BUTTON */
-        input[type="text"], input[type="number"] {
-            background: rgba(0,0,0,0.3);
-            border: 1px solid #444;
-            color: white;
-            padding: 12px;
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
             border-radius: 8px;
-            outline: none;
-            transition: 0.3s;
+            border: none;
+            background: rgba(0,0,0,0.3);
+            color: white;
+            box-sizing: border-box;
         }
-
-        input:focus { border-color: var(--primary-color); }
-
         button {
-            background: var(--primary-color);
+            width: 100%;
+            padding: 12px;
+            background: #e94560;
             color: white;
             border: none;
-            padding: 12px 25px;
             border-radius: 8px;
             cursor: pointer;
             font-weight: bold;
-            transition: 0.3s;
         }
-
-        button:hover { opacity: 0.9; transform: translateY(-2px); }
-
-        /* VÙNG USER */
-        .user-section { text-align: center; }
-        .number-input-big { font-size: 40px; width: 120px; text-align: center; margin: 20px 0; }
-
-        /* VÙNG ADMIN */
-        .admin-section { display: none; }
-        .user-data-card {
-            background: rgba(0,0,0,0.2);
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 10px;
+        #admin-panel, #user-panel { display: none; }
+        .user-row {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            border-left: 4px solid var(--primary-color);
+            padding: 5px;
+            border-bottom: 1px solid #444;
         }
-
-        .badge {
-            font-size: 12px;
-            padding: 4px 8px;
-            border-radius: 5px;
-            background: #444;
-        }
-
-        .admin-badge { background: var(--admin-color); }
     </style>
 </head>
 <body>
 
-    <div id="login-page">
-        <i class="fas fa-unlock-alt" style="font-size: 50px; color: var(--primary-color); margin-bottom: 20px;"></i>
-        <h2>ĐĂNG NHẬP HỆ THỐNG</h2>
+    <div id="login-screen" class="card">
+        <h2>ĐĂNG NHẬP</h2>
         <input type="text" id="nameInput" placeholder="Nhập tên của bạn...">
-        <p style="font-size: 12px; color: #aaa;">(Nhập 'admin' để quản trị)</p>
-        <button onclick="handleLogin()">VÀO PHÒNG</button>
+        <button onclick="login()">VÀO PHÒNG</button>
     </div>
 
-    <div id="main-app" class="container">
-        <div class="header">
-            <div>
-                <span id="roleBadge" class="badge">PLAYER</span>
-                <strong id="displayUserName" style="margin-left: 10px;"></strong>
-            </div>
-            <button onclick="location.reload()" style="background: #444; padding: 5px 10px;">Thoát</button>
-        </div>
+    <div id="user-panel" class="card">
+        <h3>Chào <span id="u-name"></span>!</h3>
+        <p>Chọn số may mắn (1-100):</p>
+        <input type="number" id="userGuess" min="1" max="100">
+        <button onclick="sendGuess()">GỬI SỐ</button>
+        <p id="msg"></p>
+    </div>
 
-        <div id="userSection" class="user-section">
-            <h3>Chọn con số may mắn (1 - 100)</h3>
-            <p>Số đã chọn không được là số âm.</p>
-            <input type="number" id="userGuess" class="number-input-big" min="1" max="100" placeholder="?">
-            <br>
-            <button onclick="submitGuess()">XÁC NHẬN CHỌN SỐ</button>
-            <p id="userStatus" style="margin-top: 15px; color: #4ee1a0;"></p>
+    <div id="admin-panel" class="card">
+        <h2 style="color: #fcc419;">ADMIN CONTROL</h2>
+        <div style="margin-bottom: 10px;">
+            Số trúng: <input type="number" id="winNum" value="50" style="width: 60px;">
         </div>
-
-        <div id="adminSection" class="admin-section">
-            <h2 style="color: var(--admin-color);"><i class="fas fa-user-shield"></i> Dashboard Admin</h2>
-            <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; margin-bottom: 20px;">
-                <label>Thiết lập số trúng thưởng: </label>
-                <input type="number" id="winningNumber" value="50" min="1" style="width: 70px;">
-                <button onclick="announceResult()" style="background: var(--admin-color); margin-left: 10px;">CÔNG BỐ KẾT QUẢ</button>
-            </div>
-            
-            <h4>Dữ liệu người chơi chọn số:</h4>
-            <div id="adminMonitor">
-                <p style="color: #888;">Chưa có người chơi nào chọn số...</p>
-            </div>
-        </div>
+        <div id="monitor" style="text-align: left; margin: 15px 0;"></div>
+        <button onclick="checkResult()">CÔNG BỐ KẾT QUẢ</button>
     </div>
 
     <script>
-        let currentUser = "";
-        let database = {}; // Giả lập database lưu trữ { "An": 25, "Binh": 40 }
+        let db = JSON.parse(localStorage.getItem('gameDB')) || {};
+        let myName = "";
 
-        function handleLogin() {
+        function login() {
             const name = document.getElementById('nameInput').value.trim();
-            if (!name) return alert("Vui lòng nhập tên!");
-
-            currentUser = name;
-            document.getElementById('login-page').style.display = 'none';
-            document.getElementById('main-app').style.display = 'block';
-            document.getElementById('displayUserName').innerText = name.toUpperCase();
-
-            if (name.toLowerCase() === 'admin') {
-                // Giao diện Admin
-                document.getElementById('roleBadge').innerText = "ADMIN";
-                document.getElementById('roleBadge').classList.add('admin-badge');
-                document.getElementById('adminSection').style.display = 'block';
-                document.getElementById('userSection').style.display = 'none';
+            if(!name) return;
+            myName = name;
+            document.getElementById('login-screen').style.display = 'none';
+            if(name.toLowerCase() === 'admin') {
+                document.getElementById('admin-panel').style.display = 'block';
+                showAdminData();
             } else {
-                // Giao diện User
-                document.getElementById('roleBadge').innerText = "PLAYER";
-                document.getElementById('adminSection').style.display = 'none';
-                document.getElementById('userSection').style.display = 'block';
+                document.getElementById('user-panel').style.display = 'block';
+                document.getElementById('u-name').innerText = name;
             }
         }
 
-        function submitGuess() {
-            const val = document.getElementById('userGuess').value;
-            const num = parseInt(val);
-
-            if (!val || num < 1 || num > 100) {
-                alert("Vui lòng chọn số từ 1 đến 100 và không được để trống hoặc số âm!");
-                return;
-            }
-
-            // Lưu vào "database"
-            database[currentUser] = num;
-            document.getElementById('userStatus').innerText = `✅ Bạn đã chọn số: ${num}. Chờ Admin công bố!`;
-            
-            // Cập nhật bảng Admin (nếu admin đang mở tab khác hoặc giả lập dữ liệu)
-            console.log("Dữ liệu hệ thống:", database);
+        function sendGuess() {
+            const val = parseInt(document.getElementById('userGuess').value);
+            if(isNaN(val) || val < 1) return alert("Không được để trống hoặc nhập số âm!");
+            db[myName] = val;
+            localStorage.setItem('gameDB', JSON.stringify(db));
+            document.getElementById('msg').innerText = "Đã lưu số: " + val;
         }
 
-        // Hàm Admin soi số
-        function updateAdminView() {
-            const monitor = document.getElementById('adminMonitor');
-            if (Object.keys(database).length === 0) return;
-
-            let html = "";
-            for (let user in database) {
-                html += `
-                    <div class="user-data-card">
-                        <span><i class="fas fa-user"></i> ${user}</span>
-                        <b style="font-size: 20px; color: #4ee1a0;">${database[user]}</b>
-                    </div>
-                `;
+        function showAdminData() {
+            const monitor = document.getElementById('monitor');
+            let html = "<b>Người chơi đã chọn:</b><br>";
+            for(let u in db) {
+                html += `<div class='user-row'><span>${u}</span> <b>${db[u]}</b></div>`;
             }
             monitor.innerHTML = html;
         }
 
-        // Tự động cập nhật bảng soi của Admin mỗi 2 giây
-        setInterval(() => {
-            if (document.getElementById('adminSection').style.display === 'block') {
-                updateAdminView();
-            }
-        }, 2000);
-
-        function announceResult() {
-            const winNum = parseInt(document.getElementById('winningNumber').value);
+        function checkResult() {
+            const win = parseInt(document.getElementById('winNum').value);
             let winners = [];
-
-            for (let user in database) {
-                if (database[user] === winNum) {
-                    winners.push(user);
-                }
-            }
-
-            if (winners.length > 0) {
-                alert(`🎉 KẾT QUẢ: Số may mắn là ${winNum}. \nCHÚC MỪNG: ${winners.join(", ")} !`);
-            } else {
-                alert(`Kết quả là ${winNum}. Không có ai trúng thưởng!`);
-            }
+            for(let u in db) { if(db[u] === win) winners.push(u); }
+            alert(winners.length ? "Người thắng: " + winners.join(", ") : "Không ai trúng số " + win);
         }
+
+        // Cập nhật dữ liệu admin mỗi giây
+        setInterval(() => { if(myName.toLowerCase()==='admin') showAdminData(); }, 1000);
     </script>
 </body>
 </html>
