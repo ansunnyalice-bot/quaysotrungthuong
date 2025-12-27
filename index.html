@@ -3,126 +3,248 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lucky Guess Game</title>
+    <title>Lucky Number Pro - Cấp quyền & Lưu trữ</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        :root {
+            --primary-color: #6c5ce7;
+            --admin-color: #e74c3c;
+            --glass: rgba(255, 255, 255, 0.1);
+            --text: #ffffff;
+        }
+
         body {
-            background: #0f0c29;
-            color: white;
-            font-family: 'Segoe UI', sans-serif;
+            background: radial-gradient(circle at top, #1e272e, #0f0c29);
+            color: var(--text);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            margin: 0;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            margin: 0;
         }
-        .card {
-            background: rgba(255, 255, 255, 0.1);
+
+        #login-page {
+            text-align: center;
+            background: var(--glass);
+            padding: 40px;
+            border-radius: 20px;
             backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .container {
+            display: none;
+            width: 90%;
+            max-width: 800px;
+            background: var(--glass);
             padding: 30px;
             border-radius: 20px;
-            text-align: center;
-            width: 350px;
-            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
         }
-        input {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 8px;
-            border: none;
-            background: rgba(0,0,0,0.3);
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        select, input[type="text"], input[type="number"] {
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #666;
             color: white;
-            box-sizing: border-box;
-        }
-        button {
-            width: 100%;
             padding: 12px;
-            background: #e94560;
+            border-radius: 8px;
+            width: 100%;
+            margin: 10px 0;
+            font-size: 16px;
+        }
+
+        button {
+            background: var(--primary-color);
             color: white;
             border: none;
+            padding: 12px 25px;
             border-radius: 8px;
             cursor: pointer;
             font-weight: bold;
+            transition: 0.3s;
+            width: 100%;
         }
-        #admin-panel, #user-panel { display: none; }
-        .user-row {
+
+        button:hover { filter: brightness(1.2); transform: translateY(-2px); }
+
+        .user-data-card {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
             display: flex;
             justify-content: space-between;
-            padding: 5px;
-            border-bottom: 1px solid #444;
+            border-left: 4px solid var(--primary-color);
         }
+
+        .winner-card { border-left-color: #2ecc71; background: rgba(46, 204, 113, 0.2); }
+
+        .badge { font-size: 12px; padding: 4px 8px; border-radius: 5px; background: #444; }
+        .admin-badge { background: var(--admin-color); }
     </style>
 </head>
 <body>
 
-    <div id="login-screen" class="card">
+    <div id="login-page">
+        <i class="fas fa-user-lock" style="font-size: 50px; color: var(--primary-color); margin-bottom: 20px;"></i>
         <h2>ĐĂNG NHẬP</h2>
         <input type="text" id="nameInput" placeholder="Nhập tên của bạn...">
-        <button onclick="login()">VÀO PHÒNG</button>
+        <button onclick="handleLogin()">VÀO PHÒNG</button>
     </div>
 
-    <div id="user-panel" class="card">
-        <h3>Chào <span id="u-name"></span>!</h3>
-        <p>Chọn số may mắn (1-100):</p>
-        <input type="number" id="userGuess" min="1" max="100">
-        <button onclick="sendGuess()">GỬI SỐ</button>
-        <p id="msg"></p>
-    </div>
-
-    <div id="admin-panel" class="card">
-        <h2 style="color: #fcc419;">ADMIN CONTROL</h2>
-        <div style="margin-bottom: 10px;">
-            Số trúng: <input type="number" id="winNum" value="50" style="width: 60px;">
+    <div id="main-app" class="container">
+        <div class="header">
+            <div>
+                <span id="roleBadge" class="badge">PLAYER</span>
+                <strong id="displayUserName" style="margin-left: 10px;"></strong>
+            </div>
+            <button onclick="location.reload()" style="width: auto; background: #444;">Thoát</button>
         </div>
-        <div id="monitor" style="text-align: left; margin: 15px 0;"></div>
-        <button onclick="checkResult()">CÔNG BỐ KẾT QUẢ</button>
+
+        <div id="userSection">
+            <h3>Chọn con số may mắn (1 - 100)</h3>
+            <select id="userGuess">
+                <option value="">-- Click để chọn số --</option>
+            </select>
+            <button onclick="submitGuess()" style="margin-top: 10px;">XÁC NHẬN CHỌN</button>
+            <div id="userStatus" style="margin-top: 20px; font-weight: bold;"></div>
+        </div>
+
+        <div id="adminSection" style="display: none;">
+            <h2 style="color: var(--admin-color);"><i class="fas fa-user-shield"></i> Dashboard Admin</h2>
+            <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px;">
+                <label>Số trúng thưởng hiện tại: </label>
+                <input type="number" id="winningNumber" min="1" max="100" style="width: 80px; display: inline-block;">
+                <button onclick="saveAdminSetting()" style="width: auto; background: #2ecc71; margin-left: 10px;">LƯU SỐ TRÚNG</button>
+                <button onclick="clearData()" style="width: auto; background: #555; margin-left: 10px;">RESET GAME</button>
+            </div>
+            
+            <h4 style="margin-top: 25px;">Danh sách người chơi:</h4>
+            <div id="adminMonitor"></div>
+        </div>
     </div>
 
     <script>
-        let db = JSON.parse(localStorage.getItem('gameDB')) || {};
-        let myName = "";
+        // Tạo danh sách 100 số cho select
+        const select = document.getElementById('userGuess');
+        for (let i = 1; i <= 100; i++) {
+            let opt = document.createElement('option');
+            opt.value = i;
+            opt.innerHTML = i;
+            select.appendChild(opt);
+        }
 
-        function login() {
+        let currentUser = "";
+        
+        // TẢI DỮ LIỆU TỪ LOCALSTORAGE
+        function getDB() { return JSON.parse(localStorage.getItem('lucky_db')) || {}; }
+        function setDB(data) { localStorage.setItem('lucky_db', JSON.stringify(data)); }
+
+        function handleLogin() {
             const name = document.getElementById('nameInput').value.trim();
-            if(!name) return;
-            myName = name;
-            document.getElementById('login-screen').style.display = 'none';
-            if(name.toLowerCase() === 'admin') {
-                document.getElementById('admin-panel').style.display = 'block';
-                showAdminData();
+            if (!name) return alert("Vui lòng nhập tên!");
+
+            currentUser = name;
+            document.getElementById('login-page').style.display = 'none';
+            document.getElementById('main-app').style.display = 'block';
+            document.getElementById('displayUserName').innerText = name.toUpperCase();
+
+            const db = getDB();
+
+            if (name.toLowerCase() === 'admin') {
+                document.getElementById('roleBadge').innerText = "ADMIN";
+                document.getElementById('roleBadge').classList.add('admin-badge');
+                document.getElementById('adminSection').style.display = 'block';
+                document.getElementById('userSection').style.display = 'none';
+                document.getElementById('winningNumber').value = db.winningNum || 50;
+                updateAdminView();
             } else {
-                document.getElementById('user-panel').style.display = 'block';
-                document.getElementById('u-name').innerText = name;
+                document.getElementById('roleBadge').innerText = "PLAYER";
+                checkUserStatus(db);
             }
         }
 
-        function sendGuess() {
-            const val = parseInt(document.getElementById('userGuess').value);
-            if(isNaN(val) || val < 1) return alert("Không được để trống hoặc nhập số âm!");
-            db[myName] = val;
-            localStorage.setItem('gameDB', JSON.stringify(db));
-            document.getElementById('msg').innerText = "Đã lưu số: " + val;
+        function submitGuess() {
+            const val = document.getElementById('userGuess').value;
+            if (!val) return alert("Vui lòng chọn 1 con số!");
+
+            let db = getDB();
+            if (!db.players) db.players = {};
+            
+            db.players[currentUser] = parseInt(val);
+            setDB(db);
+
+            alert("Đã gửi số dự đoán thành công!");
+            checkUserStatus(db);
         }
 
-        function showAdminData() {
-            const monitor = document.getElementById('monitor');
-            let html = "<b>Người chơi đã chọn:</b><br>";
-            for(let u in db) {
-                html += `<div class='user-row'><span>${u}</span> <b>${db[u]}</b></div>`;
+        function checkUserStatus(db) {
+            const statusDiv = document.getElementById('userStatus');
+            const userChoice = db.players ? db.players[currentUser] : null;
+            const winNum = db.winningNum;
+
+            if (userChoice) {
+                if (winNum && userChoice === winNum) {
+                    statusDiv.innerHTML = `<span style="color: #2ecc71; font-size: 20px;">🎉 CHÚC MỪNG! Bạn đã đoán đúng số ${winNum}!</span>`;
+                } else if (winNum) {
+                    statusDiv.innerHTML = `<span style="color: #e74c3c;">Rất tiếc! Số trúng là ${winNum}, bạn chọn ${userChoice}.</span>`;
+                } else {
+                    statusDiv.innerHTML = `<span style="color: #fcc419;">Bạn đã chọn số: ${userChoice}. Đợi Admin công bố...</span>`;
+                }
+            }
+        }
+
+        function saveAdminSetting() {
+            let db = getDB();
+            db.winningNum = parseInt(document.getElementById('winningNumber').value);
+            setDB(db);
+            alert("Đã lưu số trúng thưởng và cập nhật kết quả!");
+            updateAdminView();
+        }
+
+        function updateAdminView() {
+            const db = getDB();
+            const monitor = document.getElementById('adminMonitor');
+            if (!db.players || Object.keys(db.players).length === 0) {
+                monitor.innerHTML = "<p>Chưa có ai chơi.</p>";
+                return;
+            }
+
+            let html = "";
+            for (let user in db.players) {
+                const isWinner = db.players[user] === db.winningNum;
+                html += `
+                    <div class="user-data-card ${isWinner ? 'winner-card' : ''}">
+                        <span><i class="fas fa-user"></i> ${user} ${isWinner ? '🏆' : ''}</span>
+                        <b>Số chọn: ${db.players[user]}</b>
+                    </div>
+                `;
             }
             monitor.innerHTML = html;
         }
 
-        function checkResult() {
-            const win = parseInt(document.getElementById('winNum').value);
-            let winners = [];
-            for(let u in db) { if(db[u] === win) winners.push(u); }
-            alert(winners.length ? "Người thắng: " + winners.join(", ") : "Không ai trúng số " + win);
+        function clearData() {
+            if(confirm("Bạn có chắc muốn xóa hết dữ liệu để chơi vòng mới?")) {
+                localStorage.removeItem('lucky_db');
+                location.reload();
+            }
         }
 
-        // Cập nhật dữ liệu admin mỗi giây
-        setInterval(() => { if(myName.toLowerCase()==='admin') showAdminData(); }, 1000);
+        // Tự động cập nhật cho Admin mỗi 3 giây
+        setInterval(() => {
+            if(currentUser.toLowerCase() === 'admin') updateAdminView();
+        }, 3000);
     </script>
 </body>
 </html>
