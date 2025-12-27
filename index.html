@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vòng Quay May Mắn Pro</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        body { font-family: 'Arial', sans-serif; background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d); min-height: 100vh; display: flex; align-items: center; justify-content: center; margin: 0; color: #333; }
+        .container { width: 90%; max-width: 800px; background: rgba(255, 255, 255, 0.95); padding: 30px; border-radius: 20px; shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; }
+        .input-group { margin-bottom: 20px; }
+        input[type="text"], input[type="number"] { padding: 12px; border: 2px solid #ddd; border-radius: 8px; width: 200px; outline: none; }
+        button { padding: 12px 25px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn-add { background: #007bff; color: white; }
+        .btn-spin { background: #ff4b2b; color: white; font-size: 1.5rem; width: 100%; margin-top: 20px; }
+        .btn-spin:disabled { background: #ccc; cursor: not-allowed; }
+        
+        #display-area { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 30px 0; min-height: 120px; padding: 10px; border: 2px dashed #bbb; border-radius: 10px; }
+        .user-icon { padding: 15px 25px; background: white; border: 2px solid #007bff; color: #007bff; border-radius: 50px; font-weight: bold; font-size: 1.1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .highlight { background: #ffeb3b !important; transform: scale(1.1); border-color: #f57f17; }
+        .winner { background: #4caf50 !important; color: white !important; border-color: #2e7d32; transform: scale(1.3); z-index: 10; box-shadow: 0 0 20px rgba(76,175,80,0.6); }
+
+        .admin-panel { margin-top: 40px; font-size: 0.7rem; color: #aaa; border-top: 1px solid #eee; padding-top: 10px; }
+        #result-text { font-size: 2rem; font-weight: bold; margin-top: 20px; min-height: 50px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🎁 VÒNG QUAY MAY MẮN 🎁</h1>
+    
+    <div class="input-group">
+        <input type="text" id="nameInput" placeholder="Nhập tên người chơi...">
+        <button class="btn-add" onclick="addUser()">THÊM</button>
+    </div>
+
+    <div id="display-area">
+        </div>
+
+    <button id="spinBtn" class="btn-spin" onclick="startSpin()">BẮT ĐẦU QUAY</button>
+    <div id="result-text"></div>
+
+    <div class="admin-panel">
+        Thiết lập trúng (Admin): <input type="number" id="adminChoice" placeholder="Vị trí trúng...">
+    </div>
+</div>
+
+<audio id="soundTick" src="https://www.soundjay.com/buttons/button-16.mp3"></audio>
+<audio id="soundWin" src="https://www.myinstants.com/media/sounds/cheer.mp3"></audio>
+<audio id="soundFail" src="https://www.myinstants.com/media/sounds/oh-no-no-no-tik-tok-song-sound-effect.mp3"></audio>
+
+<script>
+    let users = [];
+    const soundTick = document.getElementById('soundTick');
+    const soundWin = document.getElementById('soundWin');
+    const soundFail = document.getElementById('soundFail');
+
+    function addUser() {
+        const input = document.getElementById('nameInput');
+        if (input.value.trim()) {
+            users.push(input.value.trim());
+            input.value = '';
+            render();
+        }
+    }
+
+    function render() {
+        const area = document.getElementById('display-area');
+        area.innerHTML = users.map((u, i) => `<div class="user-icon" id="user-${i}">${u}</div>`).join('');
+    }
+
+    function fireFireworks() {
+        var duration = 5 * 1000;
+        var animationEnd = Date.now() + duration;
+        var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+        function randomInRange(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+
+        var interval = setInterval(function() {
+            var timeLeft = animationEnd - Date.now();
+            if (timeLeft <= 0) return clearInterval(interval);
+            var particleCount = 50 * (timeLeft / duration);
+            confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+            confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+        }, 250);
+    }
+
+    function startSpin() {
+        if (users.length < 2) return alert("Cần ít nhất 2 người để quay!");
+        
+        const adminIndex = parseInt(document.getElementById('adminChoice').value) - 1;
+        const btn = document.getElementById('spinBtn');
+        const res = document.getElementById('result-text');
+        
+        btn.disabled = true;
+        res.innerText = "Đang quay...";
+        res.style.color = "#333";
+
+        let current = 0;
+        let count = 0;
+        let speed = 100;
+        const totalSteps = 40 + Math.floor(Math.random() * 10); 
+
+        function run() {
+            document.querySelectorAll('.user-icon').forEach(el => el.classList.remove('highlight'));
+            document.getElementById(`user-${current}`).classList.add('highlight');
+            
+            soundTick.currentTime = 0;
+            soundTick.play();
+
+            current = (current + 1) % users.length;
+            count++;
+
+            if (count < totalSteps) {
+                setTimeout(run, speed);
+            } else {
+                finish(adminIndex);
+            }
+        }
+        run();
+    }
+
+    function finish(adminIndex) {
+        document.querySelectorAll('.user-icon').forEach(el => el.classList.remove('highlight'));
+        const btn = document.getElementById('spinBtn');
+        const res = document.getElementById('result-text');
+        
+        // Logic trúng thưởng
+        const isWinning = (!isNaN(adminIndex) && adminIndex >= 0 && adminIndex < users.length);
+        const finalIdx = isWinning ? adminIndex : Math.floor(Math.random() * users.length);
+        
+        const winnerEl = document.getElementById(`user-${finalIdx}`);
+        winnerEl.classList.add('winner');
+
+        if (isWinning) {
+            res.innerText = `🎊 CHÚC MỪNG: ${users[finalIdx]} 🎊`;
+            res.style.color = "#2e7d32";
+            soundWin.play();
+            fireFireworks(); // Bắn pháo hoa
+        } else {
+            res.innerText = "❌ MAY MẮN LẦN SAU! ❌";
+            res.style.color = "#d32f2f";
+            soundFail.play();
+        }
+        
+        btn.disabled = false;
+    }
+</script>
+
+</body>
+</html>
