@@ -2,169 +2,157 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vòng Quay May Mắn Hoạt Hình</title>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <title>Lucky Number - Đoán Số May Mắn</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --primary: #ff4757; --bg: #f0f2f5; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 20px; margin: 0; }
-        .container { width: 100%; max-width: 900px; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); text-align: center; }
-        
-        h1 { color: #333; font-size: 2rem; margin-bottom: 20px; }
-        .input-area { background: #fff; padding: 20px; border-radius: 15px; border: 2px dashed #ddd; margin-bottom: 20px; }
-        input { padding: 12px; border: 2px solid #eee; border-radius: 10px; outline: none; transition: 0.3s; }
-        input:focus { border-color: var(--primary); }
-        button { padding: 12px 25px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; background: #007bff; color: white; transition: 0.3s; }
-        button:hover { opacity: 0.9; transform: translateY(-2px); }
-
-        /* Khung hiển thị icon */
-        #display-area { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); 
-            gap: 15px; margin: 30px 0; min-height: 150px; 
+        body {
+            background: radial-gradient(circle, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
         }
-        .user-card { 
-            background: #fff; border: 2px solid #f0f0f0; padding: 15px; border-radius: 15px; 
-            display: flex; flex-direction: column; align-items: center; transition: 0.3s;
-        }
-        .avatar { width: 60px; height: 60px; margin-bottom: 10px; }
-        .user-name { font-weight: bold; color: #555; font-size: 0.9rem; }
-        
-        /* Hiệu ứng quay */
-        .highlight { border-color: #ffc107; background: #fff9e6; transform: scale(1.05); box-shadow: 0 5px 15px rgba(255,193,7,0.3); }
-        .winner-card { border-color: #28a745 !important; background: #e8f5e9 !important; transform: scale(1.1); box-shadow: 0 5px 20px rgba(40,167,69,0.4); }
 
-        #result-msg { font-size: 1.8rem; font-weight: bold; margin: 20px 0; min-height: 40px; }
-        .spin-btn { background: var(--primary); font-size: 1.2rem; width: 250px; height: 60px; border-radius: 30px; box-shadow: 0 4px 15px rgba(255,71,87,0.3); }
-        
-        .admin-box { margin-top: 50px; border-top: 1px solid #eee; padding-top: 15px; display: flex; justify-content: center; align-items: center; gap: 10px; font-size: 0.8rem; color: #999; }
-        .status-badge { display: inline-block; padding: 5px 10px; border-radius: 5px; background: #eee; font-size: 0.7rem; }
+        h1 { margin-top: 20px; color: #fcc419; text-shadow: 0 0 10px rgba(252, 196, 25, 0.5); }
+
+        /* Khung chứa các User */
+        .user-container {
+            display: flex;
+            gap: 20px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .user-card {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            width: 120px;
+            text-align: center;
+            transition: 0.3s;
+            backdrop-filter: blur(5px);
+        }
+
+        .user-card.active {
+            border-color: #4ee1a0;
+            box-shadow: 0 0 20px rgba(78, 225, 160, 0.4);
+            transform: translateY(-5px);
+        }
+
+        .user-card i { font-size: 40px; margin-bottom: 10px; color: #4ee1a0; }
+
+        .user-card input {
+            width: 80%;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid #555;
+            color: white;
+            padding: 5px;
+            border-radius: 5px;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        /* Admin Panel */
+        .admin-panel {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px dashed #fcc419;
+            margin-top: 40px;
+            width: 80%;
+            max-width: 500px;
+        }
+
+        .admin-view {
+            display: flex;
+            justify-content: space-between;
+            background: rgba(255,255,255,0.05);
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+
+        button {
+            background: #e94560;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        button:hover { background: #ff4d6d; transform: scale(1.05); }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>🎁 VÒNG QUAY MAY MẮN 🎁</h1>
+    <h1><i class="fas fa-gift"></i> VÒNG QUAY MAY MẮN <i class="fas fa-gift"></i></h1>
 
-    <div class="input-area">
-        <input type="text" id="nameInput" placeholder="Nhập tên người chơi...">
-        <button onclick="addUser()">THÊM NGƯỜI</button>
-    </div>
-
-    <div id="display-area">
+    <div class="user-container" id="userList">
+        <div class="user-card">
+            <i class="fas fa-user-circle"></i>
+            <div>An</div>
+            <input type="number" class="user-guess" placeholder="1-100" data-name="An">
+        </div>
+        <div class="user-card">
+            <i class="fas fa-user-circle"></i>
+            <div>Bình</div>
+            <input type="number" class="user-guess" placeholder="1-100" data-name="Bình">
+        </div>
         </div>
 
-    <button id="spinBtn" class="spin-btn" onclick="startSpin()">BẮT ĐẦU QUAY</button>
-    <div id="result-msg"></div>
+    <button onclick="checkWinner()">BẮT ĐẦU MỞ THƯỞNG</button>
 
-    <div class="admin-box">
-        Admin Setup: <input type="number" id="adminChoice" placeholder="Vị trí trúng (1, 2...)" style="width: 80px; padding: 5px;">
-        <span id="winnerStatus" class="status-badge">Phần thưởng: Còn 1</span>
+    <div class="admin-panel">
+        <h3 style="color: #fcc419;"><i class="fas fa-user-shield"></i> Admin Control</h3>
+        <div>Số may mắn của Admin: <input type="number" id="adminSecret" value="50" style="padding: 5px; width: 50px;"></div>
+        <hr>
+        <div id="adminMonitor">
+            <p>Đang chờ người chơi nhập số...</p>
+        </div>
     </div>
-</div>
 
-<audio id="tickSound" src="https://www.soundjay.com/button/button-16.mp3"></audio>
-
-<script>
-    let users = [];
-    let hasWinner = false; // Biến kiểm tra đã có người trúng chưa
-    const avatars = [
-        "https://cdn-icons-png.flaticon.com/512/4140/4140231.png",
-        "https://cdn-icons-png.flaticon.com/512/4140/4140226.png",
-        "https://cdn-icons-png.flaticon.com/512/4140/4140229.png",
-        "https://cdn-icons-png.flaticon.com/512/4140/4140227.png",
-        "https://cdn-icons-png.flaticon.com/512/4140/4140228.png",
-        "https://cdn-icons-png.flaticon.com/512/4140/4140230.png"
-    ];
-
-    function addUser() {
-        const input = document.getElementById('nameInput');
-        if (input.value.trim()) {
-            const avatarIdx = Math.floor(Math.random() * avatars.length);
-            users.push({ name: input.value.trim(), img: avatars[avatarIdx] });
-            input.value = '';
-            render();
-        }
-    }
-
-    function render() {
-        const area = document.getElementById('display-area');
-        area.innerHTML = users.map((u, i) => `
-            <div class="user-card" id="user-${i}">
-                <img src="${u.img}" class="avatar">
-                <div class="user-name">${u.name}</div>
-            </div>
-        `).join('');
-    }
-
-    function startSpin() {
-        if (users.length < 1) return alert("Vui lòng thêm người chơi!");
-        
-        const btn = document.getElementById('spinBtn');
-        const res = document.getElementById('result-msg');
-        btn.disabled = true;
-        res.innerText = "⏳ Đang quay...";
-        res.style.color = "#333";
-
-        let current = 0;
-        let steps = 0;
-        const totalSteps = 30 + Math.floor(Math.random() * 10);
-        const tick = document.getElementById('tickSound');
-
-        const interval = setInterval(() => {
-            document.querySelectorAll('.user-card').forEach(el => el.classList.remove('highlight'));
-            document.getElementById(`user-${current}`).classList.add('highlight');
-            
-            tick.currentTime = 0;
-            tick.play();
-
-            current = (current + 1) % users.length;
-            steps++;
-
-            if (steps >= totalSteps) {
-                clearInterval(interval);
-                finishSpin();
+    <script>
+        // Cập nhật bảng soi của Admin thời gian thực
+        document.addEventListener('input', function (e) {
+            if (e.target.classList.contains('user-guess')) {
+                const inputs = document.querySelectorAll('.user-guess');
+                let html = '<strong>Dữ liệu người chơi:</strong><br>';
+                inputs.forEach(input => {
+                    html += `<div class="admin-view"><span>${input.dataset.name}:</span> <b>${input.value || '?'}</b></div>`;
+                });
+                document.getElementById('adminMonitor').innerHTML = html;
             }
-        }, 100);
-    }
+        });
 
-    function finishSpin() {
-        const adminIndex = parseInt(document.getElementById('adminChoice').value) - 1;
-        const btn = document.getElementById('spinBtn');
-        const res = document.getElementById('result-msg');
-        const status = document.getElementById('winnerStatus');
+        function checkWinner() {
+            const secret = parseInt(document.getElementById('adminSecret').value);
+            const inputs = document.querySelectorAll('.user-guess');
+            let winner = null;
 
-        document.querySelectorAll('.user-card').forEach(el => el.classList.remove('highlight'));
-        
-        // Luôn dừng ở vị trí admin chọn (nếu có), nếu không thì ngẫu nhiên
-        const finalIdx = (!isNaN(adminIndex) && adminIndex >= 0 && adminIndex < users.length) 
-                        ? adminIndex : Math.floor(Math.random() * users.length);
-        
-        const winnerEl = document.getElementById(`user-${finalIdx}`);
-        
-        // KIỂM TRA: Chỉ cho người đầu tiên trúng
-        if (!hasWinner && finalIdx === adminIndex) {
-            winnerEl.classList.add('winner-card');
-            res.innerHTML = `<span style="color: #28a745">🎉 CHÚC MỪNG: ${users[finalIdx].name}!</span>`;
-            status.innerText = "Phần thưởng: HẾT";
-            status.style.background = "#ff4757";
-            status.style.color = "white";
-            hasWinner = true; // Đánh dấu đã có người nhanh nhất
-            
-            // Hiệu ứng pháo hoa hoa giấy
-            confetti({
-                particleCount: 150,
-                spread: 70,
-                origin: { y: 0.6 },
-                colors: ['#ff4757', '#ffc107', '#28a745', '#007bff']
+            inputs.forEach(input => {
+                if (parseInt(input.value) === secret) {
+                    winner = input.dataset.name;
+                    input.parentElement.classList.add('active');
+                } else {
+                    input.parentElement.classList.remove('active');
+                }
             });
-        } else {
-            res.innerHTML = `<span style="color: #999">💔 May mắn lần sau!</span>`;
+
+            if (winner) {
+                alert(`🎉 CHÚC MỪNG: ${winner} đã đoán chính xác số ${secret}!`);
+            } else {
+                alert(`Rất tiếc, không ai chọn số ${secret}.`);
+            }
         }
-
-        btn.disabled = false;
-    }
-</script>
-
+    </script>
 </body>
 </html>
