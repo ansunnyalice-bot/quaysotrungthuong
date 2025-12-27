@@ -3,62 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vòng Quay May Mắn Pro</title>
+    <title>Vòng Quay May Mắn Hoạt Hình</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
-        body { font-family: 'Arial', sans-serif; background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d); min-height: 100vh; display: flex; align-items: center; justify-content: center; margin: 0; color: #333; }
-        .container { width: 90%; max-width: 800px; background: rgba(255, 255, 255, 0.95); padding: 30px; border-radius: 20px; shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; }
-        .input-group { margin-bottom: 20px; }
-        input[type="text"], input[type="number"] { padding: 12px; border: 2px solid #ddd; border-radius: 8px; width: 200px; outline: none; }
-        button { padding: 12px 25px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .btn-add { background: #007bff; color: white; }
-        .btn-spin { background: #ff4b2b; color: white; font-size: 1.5rem; width: 100%; margin-top: 20px; }
-        .btn-spin:disabled { background: #ccc; cursor: not-allowed; }
+        :root { --primary: #ff4757; --bg: #f0f2f5; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 20px; margin: 0; }
+        .container { width: 100%; max-width: 900px; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); text-align: center; }
         
-        #display-area { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 30px 0; min-height: 120px; padding: 10px; border: 2px dashed #bbb; border-radius: 10px; }
-        .user-icon { padding: 15px 25px; background: white; border: 2px solid #007bff; color: #007bff; border-radius: 50px; font-weight: bold; font-size: 1.1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .highlight { background: #ffeb3b !important; transform: scale(1.1); border-color: #f57f17; }
-        .winner { background: #4caf50 !important; color: white !important; border-color: #2e7d32; transform: scale(1.3); z-index: 10; box-shadow: 0 0 20px rgba(76,175,80,0.6); }
+        h1 { color: #333; font-size: 2rem; margin-bottom: 20px; }
+        .input-area { background: #fff; padding: 20px; border-radius: 15px; border: 2px dashed #ddd; margin-bottom: 20px; }
+        input { padding: 12px; border: 2px solid #eee; border-radius: 10px; outline: none; transition: 0.3s; }
+        input:focus { border-color: var(--primary); }
+        button { padding: 12px 25px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; background: #007bff; color: white; transition: 0.3s; }
+        button:hover { opacity: 0.9; transform: translateY(-2px); }
 
-        .admin-panel { margin-top: 40px; font-size: 0.7rem; color: #aaa; border-top: 1px solid #eee; padding-top: 10px; }
-        #result-text { font-size: 2rem; font-weight: bold; margin-top: 20px; min-height: 50px; }
+        /* Khung hiển thị icon */
+        #display-area { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); 
+            gap: 15px; margin: 30px 0; min-height: 150px; 
+        }
+        .user-card { 
+            background: #fff; border: 2px solid #f0f0f0; padding: 15px; border-radius: 15px; 
+            display: flex; flex-direction: column; align-items: center; transition: 0.3s;
+        }
+        .avatar { width: 60px; height: 60px; margin-bottom: 10px; }
+        .user-name { font-weight: bold; color: #555; font-size: 0.9rem; }
+        
+        /* Hiệu ứng quay */
+        .highlight { border-color: #ffc107; background: #fff9e6; transform: scale(1.05); box-shadow: 0 5px 15px rgba(255,193,7,0.3); }
+        .winner-card { border-color: #28a745 !important; background: #e8f5e9 !important; transform: scale(1.1); box-shadow: 0 5px 20px rgba(40,167,69,0.4); }
+
+        #result-msg { font-size: 1.8rem; font-weight: bold; margin: 20px 0; min-height: 40px; }
+        .spin-btn { background: var(--primary); font-size: 1.2rem; width: 250px; height: 60px; border-radius: 30px; box-shadow: 0 4px 15px rgba(255,71,87,0.3); }
+        
+        .admin-box { margin-top: 50px; border-top: 1px solid #eee; padding-top: 15px; display: flex; justify-content: center; align-items: center; gap: 10px; font-size: 0.8rem; color: #999; }
+        .status-badge { display: inline-block; padding: 5px 10px; border-radius: 5px; background: #eee; font-size: 0.7rem; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h1>🎁 VÒNG QUAY MAY MẮN 🎁</h1>
-    
-    <div class="input-group">
+
+    <div class="input-area">
         <input type="text" id="nameInput" placeholder="Nhập tên người chơi...">
-        <button class="btn-add" onclick="addUser()">THÊM</button>
+        <button onclick="addUser()">THÊM NGƯỜI</button>
     </div>
 
     <div id="display-area">
         </div>
 
-    <button id="spinBtn" class="btn-spin" onclick="startSpin()">BẮT ĐẦU QUAY</button>
-    <div id="result-text"></div>
+    <button id="spinBtn" class="spin-btn" onclick="startSpin()">BẮT ĐẦU QUAY</button>
+    <div id="result-msg"></div>
 
-    <div class="admin-panel">
-        Thiết lập trúng (Admin): <input type="number" id="adminChoice" placeholder="Vị trí trúng...">
+    <div class="admin-box">
+        Admin Setup: <input type="number" id="adminChoice" placeholder="Vị trí trúng (1, 2...)" style="width: 80px; padding: 5px;">
+        <span id="winnerStatus" class="status-badge">Phần thưởng: Còn 1</span>
     </div>
 </div>
 
-<audio id="soundTick" src="https://www.soundjay.com/buttons/button-16.mp3"></audio>
-<audio id="soundWin" src="https://www.myinstants.com/media/sounds/cheer.mp3"></audio>
-<audio id="soundFail" src="https://www.myinstants.com/media/sounds/oh-no-no-no-tik-tok-song-sound-effect.mp3"></audio>
+<audio id="tickSound" src="https://www.soundjay.com/button/button-16.mp3"></audio>
 
 <script>
     let users = [];
-    const soundTick = document.getElementById('soundTick');
-    const soundWin = document.getElementById('soundWin');
-    const soundFail = document.getElementById('soundFail');
+    let hasWinner = false; // Biến kiểm tra đã có người trúng chưa
+    const avatars = [
+        "https://cdn-icons-png.flaticon.com/512/4140/4140231.png",
+        "https://cdn-icons-png.flaticon.com/512/4140/4140226.png",
+        "https://cdn-icons-png.flaticon.com/512/4140/4140229.png",
+        "https://cdn-icons-png.flaticon.com/512/4140/4140227.png",
+        "https://cdn-icons-png.flaticon.com/512/4140/4140228.png",
+        "https://cdn-icons-png.flaticon.com/512/4140/4140230.png"
+    ];
 
     function addUser() {
         const input = document.getElementById('nameInput');
         if (input.value.trim()) {
-            users.push(input.value.trim());
+            const avatarIdx = Math.floor(Math.random() * avatars.length);
+            users.push({ name: input.value.trim(), img: avatars[avatarIdx] });
             input.value = '';
             render();
         }
@@ -66,85 +89,79 @@
 
     function render() {
         const area = document.getElementById('display-area');
-        area.innerHTML = users.map((u, i) => `<div class="user-icon" id="user-${i}">${u}</div>`).join('');
-    }
-
-    function fireFireworks() {
-        var duration = 5 * 1000;
-        var animationEnd = Date.now() + duration;
-        var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
-
-        function randomInRange(min, max) {
-            return Math.random() * (max - min) + min;
-        }
-
-        var interval = setInterval(function() {
-            var timeLeft = animationEnd - Date.now();
-            if (timeLeft <= 0) return clearInterval(interval);
-            var particleCount = 50 * (timeLeft / duration);
-            confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
-            confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
-        }, 250);
+        area.innerHTML = users.map((u, i) => `
+            <div class="user-card" id="user-${i}">
+                <img src="${u.img}" class="avatar">
+                <div class="user-name">${u.name}</div>
+            </div>
+        `).join('');
     }
 
     function startSpin() {
-        if (users.length < 2) return alert("Cần ít nhất 2 người để quay!");
+        if (users.length < 1) return alert("Vui lòng thêm người chơi!");
         
-        const adminIndex = parseInt(document.getElementById('adminChoice').value) - 1;
         const btn = document.getElementById('spinBtn');
-        const res = document.getElementById('result-text');
-        
+        const res = document.getElementById('result-msg');
         btn.disabled = true;
-        res.innerText = "Đang quay...";
+        res.innerText = "⏳ Đang quay...";
         res.style.color = "#333";
 
         let current = 0;
-        let count = 0;
-        let speed = 100;
-        const totalSteps = 40 + Math.floor(Math.random() * 10); 
+        let steps = 0;
+        const totalSteps = 30 + Math.floor(Math.random() * 10);
+        const tick = document.getElementById('tickSound');
 
-        function run() {
-            document.querySelectorAll('.user-icon').forEach(el => el.classList.remove('highlight'));
+        const interval = setInterval(() => {
+            document.querySelectorAll('.user-card').forEach(el => el.classList.remove('highlight'));
             document.getElementById(`user-${current}`).classList.add('highlight');
             
-            soundTick.currentTime = 0;
-            soundTick.play();
+            tick.currentTime = 0;
+            tick.play();
 
             current = (current + 1) % users.length;
-            count++;
+            steps++;
 
-            if (count < totalSteps) {
-                setTimeout(run, speed);
-            } else {
-                finish(adminIndex);
+            if (steps >= totalSteps) {
+                clearInterval(interval);
+                finishSpin();
             }
-        }
-        run();
+        }, 100);
     }
 
-    function finish(adminIndex) {
-        document.querySelectorAll('.user-icon').forEach(el => el.classList.remove('highlight'));
+    function finishSpin() {
+        const adminIndex = parseInt(document.getElementById('adminChoice').value) - 1;
         const btn = document.getElementById('spinBtn');
-        const res = document.getElementById('result-text');
+        const res = document.getElementById('result-msg');
+        const status = document.getElementById('winnerStatus');
+
+        document.querySelectorAll('.user-card').forEach(el => el.classList.remove('highlight'));
         
-        // Logic trúng thưởng
-        const isWinning = (!isNaN(adminIndex) && adminIndex >= 0 && adminIndex < users.length);
-        const finalIdx = isWinning ? adminIndex : Math.floor(Math.random() * users.length);
+        // Luôn dừng ở vị trí admin chọn (nếu có), nếu không thì ngẫu nhiên
+        const finalIdx = (!isNaN(adminIndex) && adminIndex >= 0 && adminIndex < users.length) 
+                        ? adminIndex : Math.floor(Math.random() * users.length);
         
         const winnerEl = document.getElementById(`user-${finalIdx}`);
-        winnerEl.classList.add('winner');
-
-        if (isWinning) {
-            res.innerText = `🎊 CHÚC MỪNG: ${users[finalIdx]} 🎊`;
-            res.style.color = "#2e7d32";
-            soundWin.play();
-            fireFireworks(); // Bắn pháo hoa
-        } else {
-            res.innerText = "❌ MAY MẮN LẦN SAU! ❌";
-            res.style.color = "#d32f2f";
-            soundFail.play();
-        }
         
+        // KIỂM TRA: Chỉ cho người đầu tiên trúng
+        if (!hasWinner && finalIdx === adminIndex) {
+            winnerEl.classList.add('winner-card');
+            res.innerHTML = `<span style="color: #28a745">🎉 CHÚC MỪNG: ${users[finalIdx].name}!</span>`;
+            status.innerText = "Phần thưởng: HẾT";
+            status.style.background = "#ff4757";
+            status.style.color = "white";
+            hasWinner = true; // Đánh dấu đã có người nhanh nhất
+            
+            // Hiệu ứng pháo hoa hoa giấy
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#ff4757', '#ffc107', '#28a745', '#007bff']
+            });
+        } else {
+            res.innerHTML = `<span style="color: #999">💔 May mắn lần sau!</span>`;
+        }
+
         btn.disabled = false;
     }
 </script>
